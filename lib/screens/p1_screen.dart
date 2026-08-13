@@ -3,8 +3,6 @@ import '../locator.dart';
 import '../state/app_state.dart';
 import 'p2_screen.dart';
 
-/// [P1Screen] permite modificar el estado en GetIt (`getIt<AppState>()`)
-/// y demuestra el paso directo de valores de una pantalla a otra mediante constructor.
 class P1Screen extends StatefulWidget {
   const P1Screen({super.key});
 
@@ -13,18 +11,17 @@ class P1Screen extends StatefulWidget {
 }
 
 class _P1ScreenState extends State<P1Screen> {
-  final TextEditingController _nombreController = TextEditingController();
+  final _controller = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Leemos el valor actual desde GetIt sin necesidad de context
-    _nombreController.text = getIt<AppState>().nombreAprendiz;
+    _controller.text = getIt<AppState>().nombre;
   }
 
   @override
   void dispose() {
-    _nombreController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -32,108 +29,46 @@ class _P1ScreenState extends State<P1Screen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('P1 - Registrar Datos'),
+        title: const Text('Pantalla 1'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Banner pedagógico
-            Card(
-              color: Colors.blue.shade50,
-              elevation: 0,
-              child: const Padding(
-                padding: EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    Icon(Icons.lightbulb_outline, color: Colors.blue),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '💡 Concepto: Aquí escribimos en GetIt (getIt<AppState>()) sin acoplar la lógica al BuildContext.',
-                        style: TextStyle(fontSize: 13, color: Colors.black87),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            Text(
-              '1. Modificar Estado Global:',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 10),
             TextField(
-              controller: _nombreController,
+              controller: _controller,
               decoration: const InputDecoration(
-                labelText: 'Nombre del Aprendiz',
-                hintText: 'Ej: Dany Sebastian',
-                prefixIcon: Icon(Icons.person_outline),
+                labelText: 'Ingresa un nombre o mensaje',
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
+            const SizedBox(height: 20),
+            ElevatedButton(
               onPressed: () {
-                final nuevoNombre = _nombreController.text;
-                if (nuevoNombre.trim().isEmpty) return;
-
-                // Escribir en el estado global
-                getIt<AppState>().actualizarNombre(nuevoNombre);
-
+                getIt<AppState>().cambiarNombre(_controller.text);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('✅ Nombre guardado en GetIt (Estado Global)'),
-                    duration: Duration(seconds: 2),
-                  ),
+                  const SnackBar(content: Text('Guardado en el estado global (GetIt)')),
                 );
               },
-              icon: const Icon(Icons.save),
-              label: const Text('Guardar Nombre en GetIt'),
+              child: const Text('Guardar en Estado Global'),
             ),
-
-            const SizedBox(height: 30),
-            const Divider(),
-            const SizedBox(height: 10),
-
-            Text(
-              '2. Paso de Valores Directo (De P1 a P2):',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Envío de datos efímeros por el constructor de P2Screen:',
-              style: TextStyle(fontSize: 13, color: Colors.black54),
-            ),
-            const SizedBox(height: 14),
-
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal.shade700,
-                foregroundColor: Colors.white,
-              ),
+            const SizedBox(height: 20),
+            ElevatedButton(
               onPressed: () {
-                final mensaje =
-                    'Mensaje enviado directamente desde P1 por constructor a las ${TimeOfDay.now().format(context)}';
+                final texto = _controller.text.trim().isEmpty
+                    ? 'Mensaje enviado desde la pantalla 1'
+                    : _controller.text;
 
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => P2Screen(
-                      mensajeDesdeP1: mensaje,
-                    ),
+                    builder: (context) => P2Screen(mensajeDesdeP1: texto),
                   ),
                 );
               },
-              icon: const Icon(Icons.send_outlined),
-              label: const Text('Ir a P2 enviando Mensaje Directo'),
+              child: const Text('Ir a Pantalla 2 (Paso Directo)'),
             ),
           ],
         ),
